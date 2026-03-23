@@ -1,103 +1,53 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+export default function Login() {
+  const [attempts, setAttempts] = useState(0);
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  const login = async () => {
-    setLoading(true);
+  const handleLogin = () => {
+  // ❗ Step 1: Check empty input
+  if (!password || password.trim() === "") {
+    alert("⚠️ Please enter a password");
+    return; // stop execution
+  }
 
-    const res = await fetch("http://localhost:5000/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ password: "123" }),
-    });
+  // ❗ Step 2: Wrong password logic
+  if (password !== "admin") {
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
 
-    const result = await res.json();
-
-    setLoading(false);
-    setData(result);
-  };
+    if (newAttempts >= 3) {
+      alert("🚨 Suspicious activity detected!");
+      router.push("/dashboard");
+    }
+  } else {
+    alert("Login success");
+  }
+};
 
   return (
-    <div>
-      <motion.div
-        whileHover={{ scale: 1.15 }}
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-slate-800 p-4 rounded"
->
-       
-        </motion.div>
+    <div className="h-screen flex flex-col items-center justify-center bg-slate-900 text-white">
+      <h1 className="text-2xl mb-4">🔐 Secure Login</h1>
 
-      <h1 className="text-3xl font-bold text-center mb-6">
-        🚨 Phantom Ledger X Dashboard
-      </h1>
+      <input
+        type="password"
+        placeholder="Enter password"
+        className="p-2 text-black mb-4"
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-       {/* Button */}
-      <button onClick={login}>Simulate Attack</button>
+      <button
+        onClick={handleLogin}
+        className="bg-red-500 px-4 py-2 rounded"
+      >
+        Login
+      </button>
 
-    {/* 🔍 LOADING GOES HERE */}
-    {loading && (
-      <p className="text-center text-yellow-400">
-        🔍 Analyzing attack...
-      </p>
-    )}
-
-      <div className="text-center mb-6">
-        <button
-          onClick={login}
-          className="bg-green-500 px-4 py-2 rounded"
-        >
-          Simulate Attack
-        </button>
-      </div>
-
-      {data && data.type && (
-        <div className="grid grid-cols-2 gap-6">
-
-          {/* Attack */}
-          <div className="bg-slate-800 p-4 rounded">
-            <h2 className="text-xl font-bold">⚠️ Attack Detected</h2>
-            <p>Type: {data.type}</p>
-            <p>Risk: {data.risk}</p>
-            <p>Time: {data.time}</p>
-          </div>
-
-          {/* Profile */}
-          <div className="bg-slate-800 p-4 rounded">
-            <h3 className="font-bold">🧬 Attacker Profile</h3>
-            <p>IP: {data.ip}</p>
-            <p>Location: {data.location}</p>
-            <p>Behavior: {data.dna?.behavior}</p>
-            <p>Pattern: {data.dna?.pattern}</p>
-            <p>Risk Score: {data.dna?.risk_score}</p>
-          </div>
-
-          {/* Timeline */}
-          <div className="bg-slate-800 p-4 rounded">
-            <h3 className="font-bold">📊 Timeline</h3>
-            <p>• Login attempt</p>
-            <p>• Multiple failures</p>
-            <p>• Attack detected</p>
-            <p>• Evidence secured</p>
-          </div>
-
-          {/* Blockchain */}
-          <div className="bg-slate-800 p-4 rounded">
-            <h3 className="font-bold">🔐 Blockchain</h3>
-            <p>{data.hash}</p>
-            <p>Threat shared across nodes</p>
-          </div>
-
-        </div>
-      )}
+      <p className="mt-4">Attempts: {attempts}</p>
     </div>
   );
 }
